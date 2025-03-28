@@ -3,24 +3,46 @@
 
 #include "Ipvmulti/Public/Actors/LaunchPad.h"
 
+#include "Components/BoxComponent.h"
+#include "GameFramework/Character.h"
+
 
 // Sets default values
 ALaunchPad::ALaunchPad()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	// Inicializacion de componentes
+	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>("MeshComp");
+	OverlapComp = CreateDefaultSubobject<UBoxComponent>("OverlapComp");
+	// Se establece el overlap component como el root
+	RootComponent = OverlapComp;
+	// El mesh comp se hace hijo del overlap component (root)
+	MeshComp->SetupAttachment(OverlapComp);
 }
 
 // Called when the game starts or when spawned
 void ALaunchPad::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	OverlapComp->OnComponentBeginOverlap.AddDynamic(this, &ALaunchPad::OverlapLaunchPad);
 }
 
 // Called every frame
 void ALaunchPad::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+void ALaunchPad::OverlapLaunchPad(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
+{
+	ACharacter* MyChar = Cast<ACharacter>(OtherActor);
+
+	if (MyChar)
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Overlap"));
+		}
+	}
 }
 
