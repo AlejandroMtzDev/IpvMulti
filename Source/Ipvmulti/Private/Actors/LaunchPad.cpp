@@ -17,6 +17,8 @@ ALaunchPad::ALaunchPad()
 	RootComponent = OverlapComp;
 	// El mesh comp se hace hijo del overlap component (root)
 	MeshComp->SetupAttachment(OverlapComp);
+	LaunchForce = 1000;
+	LaunchAngle = 90;
 }
 
 // Called when the game starts or when spawned
@@ -35,10 +37,14 @@ void ALaunchPad::Tick(float DeltaTime)
 
 void ALaunchPad::OverlapLaunchPad(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
+	FRotator LaunchDirection = GetActorRotation();
+	LaunchDirection.Pitch += LaunchAngle;
+	FVector LaunchVelocity = LaunchDirection.Vector() * LaunchForce;
 	ACharacter* MyChar = Cast<ACharacter>(OtherActor);
 
 	if (MyChar)
 	{
+		MyChar -> LaunchCharacter(LaunchVelocity, true, true);
 		if (GEngine)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Overlap"));
