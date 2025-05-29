@@ -2,7 +2,6 @@
 
 
 #include "NewIpvMultiCharacter.h"
-
 #include "EnhancedInputComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -86,54 +85,53 @@ void ANewIpvMultiCharacter::Tick(float DeltaTime)
 void ANewIpvMultiCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	// Add Input Mapping Context
-	// if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
-	// {
-	// 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-	// 	{
-	// 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
-	// 	}
-	// }
-	//
-	// // Set up action bindings
-	// if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
-	// 	
-	// 	// Jumping
-	// 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-	// 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-	//
-	// 	// Moving
-	// 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ANewIpvMultiCharacter::Move);
-	//
-	// 	// Looking
-	// 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ANewIpvMultiCharacter::Look);
-	// }
-	// else
-	// {
-	// 	UE_LOG(LogIpvCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
-	// }
+	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		}
+	}
+	
+	// Set up action bindings
+	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
+		
+		// Jumping
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+	
+		// Moving
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ANewIpvMultiCharacter::Move);
+	
+		// Looking
+		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ANewIpvMultiCharacter::Look);
+
+		// Firing
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &ANewIpvMultiCharacter::StartFire);
+	}
 	
 	// Set up gameplay key bindings
-	check(PlayerInputComponent);
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
-	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
-	 
-	PlayerInputComponent->BindAxis("Move Forward / Backward", this, &ANewIpvMultiCharacter::MoveForward);
-	PlayerInputComponent->BindAxis("Move Right / Left", this, &ANewIpvMultiCharacter::MoveRight);
-	 
-	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
-	// "turn" handles devices that provide an absolute delta, such as a mouse.
-	// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
-	PlayerInputComponent->BindAxis("Turn Right / Left Mouse", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("Turn Right / Left Gamepad", this, &ANewIpvMultiCharacter::TurnAtRate);
-	PlayerInputComponent->BindAxis("Look Up / Down Mouse", this, &APawn::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("Look Up / Down Gamepad", this, &ANewIpvMultiCharacter::LookUpAtRate);
-	 
-	// handle touch devices
-	PlayerInputComponent->BindTouch(IE_Pressed, this, &ANewIpvMultiCharacter::TouchStarted);
-	PlayerInputComponent->BindTouch(IE_Released, this, &ANewIpvMultiCharacter::TouchStopped);
-	 
-	// Handle firing projectiles
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ANewIpvMultiCharacter::StartFire);
+	// check(PlayerInputComponent);
+	// PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	// PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+	//  
+	// PlayerInputComponent->BindAxis("Move Forward / Backward", this, &ANewIpvMultiCharacter::MoveForward);
+	// PlayerInputComponent->BindAxis("Move Right / Left", this, &ANewIpvMultiCharacter::MoveRight);
+	//  
+	// // We have 2 versions of the rotation bindings to handle different kinds of devices differently
+	// // "turn" handles devices that provide an absolute delta, such as a mouse.
+	// // "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
+	// PlayerInputComponent->BindAxis("Turn Right / Left Mouse", this, &APawn::AddControllerYawInput);
+	// PlayerInputComponent->BindAxis("Turn Right / Left Gamepad", this, &ANewIpvMultiCharacter::TurnAtRate);
+	// PlayerInputComponent->BindAxis("Look Up / Down Mouse", this, &APawn::AddControllerPitchInput);
+	// PlayerInputComponent->BindAxis("Look Up / Down Gamepad", this, &ANewIpvMultiCharacter::LookUpAtRate);
+	//  
+	// // handle touch devices
+	// PlayerInputComponent->BindTouch(IE_Pressed, this, &ANewIpvMultiCharacter::TouchStarted);
+	// PlayerInputComponent->BindTouch(IE_Released, this, &ANewIpvMultiCharacter::TouchStopped);
+	//  
+	// // Handle firing projectiles
+	// PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ANewIpvMultiCharacter::StartFire);
 }
 
 void ANewIpvMultiCharacter::Move(const FInputActionValue& Value)
@@ -169,57 +167,6 @@ void ANewIpvMultiCharacter::Look(const FInputActionValue& Value)
 		// add yaw and pitch input to controller
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
-	}
-}
-
-void ANewIpvMultiCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
-{
-	Jump();
-}
-	 
-void ANewIpvMultiCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Location)
-{
-	StopJumping();
-}
-
-void ANewIpvMultiCharacter::TurnAtRate(float Rate)
-{
-	// calculate delta for this frame from the rate information
-	AddControllerYawInput(Rate * TurnRateGamepad * GetWorld()->GetDeltaSeconds());
-}
-	 
-void ANewIpvMultiCharacter::LookUpAtRate(float Rate)
-{
-	// calculate delta for this frame from the rate information
-	AddControllerPitchInput(Rate * TurnRateGamepad * GetWorld()->GetDeltaSeconds());
-}
-
-void ANewIpvMultiCharacter::MoveForward(float Value)
-{
-	if ((Controller != nullptr) && (Value != 0.0f))
-	{
-		// find out which way is forward
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-	 
-		// get forward vector
-		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-		AddMovementInput(Direction, Value);
-	}
-}
-
-void ANewIpvMultiCharacter::MoveRight(float Value)
-{
-	if ( (Controller != nullptr) && (Value != 0.0f) )
-	{
-		// find out which way is right
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-	 
-		// get right vector
-		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-		// add movement in that direction
-		AddMovementInput(Direction, Value);
 	}
 }
 
