@@ -84,6 +84,9 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	// End of APawn interface
 
+	UFUNCTION(BlueprintNativeEvent, Category = "Health")
+	void OnHealthUpdate();
+	
 public:
 	 
 	/** Returns CameraBoom subobject **/
@@ -107,7 +110,7 @@ protected:
 	void OnRep_CurrentHealth();
 	 
 	/** Response to health being updated. Called on the server immediately after modification, and on clients in response to a RepNotify*/
-	void OnHealthUpdate();
+	//void OnHealthUpdate();
 
 public:
 	 
