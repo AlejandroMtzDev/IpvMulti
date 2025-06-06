@@ -65,6 +65,10 @@ ANewIpvMultiCharacter::ANewIpvMultiCharacter()
 	//Initialize fire rate
 	FireRate = 0.25f;
 	bIsFiringWeapon = false;
+
+	// Inicializar municion
+	MaxAmmo = 5;
+	CurrentAmmo = MaxAmmo;
 }
 
 // Called when the game starts or when spawned
@@ -169,14 +173,59 @@ void ANewIpvMultiCharacter::StopFire()
 
 void ANewIpvMultiCharacter::HandleFire_Implementation()
 {
-	FVector spawnLocation = GetActorLocation() + ( GetActorRotation().Vector()  * 100.0f ) + (GetActorUpVector() * 50.0f);
-	FRotator spawnRotation = GetActorRotation();
+	if (CurrentAmmo > 0)
+	{
+		// Spawnear proyectil
+		FVector spawnLocation = GetActorLocation() + ( GetActorRotation().Vector()  * 100.0f ) + (GetActorUpVector() * 50.0f);
+		FRotator spawnRotation = GetActorRotation();
 	 
-	FActorSpawnParameters spawnParameters;
-	spawnParameters.Instigator = GetInstigator();
-	spawnParameters.Owner = this;
-	 
-	AIpvMultiProjectile* spawnedProjectile = GetWorld()->SpawnActor<AIpvMultiProjectile>(spawnLocation, spawnRotation, spawnParameters);
+		FActorSpawnParameters spawnParameters;
+		spawnParameters.Instigator = GetInstigator();
+		spawnParameters.Owner = this;
+	
+		AIpvMultiProjectile* spawnedProjectile = GetWorld()->SpawnActor<AIpvMultiProjectile>(spawnLocation, spawnRotation, spawnParameters);
+
+		// Reducir municion
+		int ammo = CurrentAmmo - 1;
+		SetCurrentAmmo(ammo);
+	}
+}
+
+void ANewIpvMultiCharacter::OnRep_Ammo()
+{
+	OnAmmoUpdate();
+}
+
+void ANewIpvMultiCharacter::OnAmmoUpdate_Implementation()
+{
+	//Client-specific functionality
+	if (IsLocallyControlled())
+	{
+		FString ammoRemaining = FString::Printf(TEXT("Ammo: %d."), CurrentAmmo);
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, ammoRemaining);
+     
+		if (CurrentAmmo <= 0)
+		{
+			FString ammoMessage = FString::Printf(TEXT("Ammo is depleted."));
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, ammoMessage);
+		}
+	}
+     
+	//Server-specific functionality
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		FString ammoMessage = FString::Printf(TEXT("%s now has %d ammo remaining."), *GetFName().ToString(), CurrentAmmo);
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, ammoMessage);
+	}
+}
+
+void ANewIpvMultiCharacter::SetCurrentAmmo(int value)
+{
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		CurrentAmmo = value;
+		OnAmmoUpdate();
+	}
 }
 
 void ANewIpvMultiCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const

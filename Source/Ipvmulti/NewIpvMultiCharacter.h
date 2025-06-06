@@ -138,6 +138,15 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION(BlueprintPure, Category = "Ammo")
+	FORCEINLINE int GetCurrentAmmo() const { return CurrentAmmo; }
+	
+	UFUNCTION(BlueprintCallable, Category = "Ammo")
+	void SetCurrentAmmo(int value);
+
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Ammo)
+	int CurrentAmmo;
+
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Gameplay|Projectile")
 	TSubclassOf<class AIpvMultiProjectile> ProjectileClass;
@@ -163,4 +172,13 @@ protected:
 
 	/** A timer handle used for providing the fire rate delay in-between spawns.*/
 	FTimerHandle FiringTimer;
+
+	UPROPERTY(EditDefaultsOnly, Category="Ammo")
+	int MaxAmmo;
+
+	UFUNCTION()
+	void OnRep_Ammo();
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Ammo")
+	void OnAmmoUpdate();
 };
