@@ -139,12 +139,12 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintPure, Category = "Ammo")
-	FORCEINLINE int GetCurrentAmmo() const { return CurrentAmmo; }
+	FORCEINLINE int GetCurrentAmmo() const { return CurrentAmmo; } ///
 	
-	UFUNCTION(BlueprintCallable, Category = "Ammo")
+	UFUNCTION(BlueprintCallable, Category = "Ammo") ///
 	void SetCurrentAmmo(int value);
 
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Ammo)
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Ammo) ///
 	int CurrentAmmo;
 
 protected:
@@ -173,12 +173,12 @@ protected:
 	/** A timer handle used for providing the fire rate delay in-between spawns.*/
 	FTimerHandle FiringTimer;
 
-	UPROPERTY(EditDefaultsOnly, Category="Ammo")
+	UPROPERTY(EditDefaultsOnly, Category="Ammo") ///
 	int MaxAmmo;
 
-	UFUNCTION()
+	UFUNCTION() ///
 	void OnRep_Ammo();
 
-	UFUNCTION(BlueprintNativeEvent, Category = "Ammo")
+	UFUNCTION(BlueprintNativeEvent, Category = "Ammo") ///
 	void OnAmmoUpdate();
 };
