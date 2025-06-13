@@ -82,6 +82,10 @@ public:
 
 	bool CheckForKey();
 
+	void RemoveKey();
+
+	void NoKeyMessage();
+
 	float health;
 	float maxHealth;
 	

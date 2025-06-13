@@ -40,7 +40,12 @@ void ADoor::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 	{
 		if (player->CheckForKey())
 		{
+			player->RemoveKey();
 			Destroy();
+		}
+		else
+		{
+			player->NoKeyMessage();
 		}
 	}
 }

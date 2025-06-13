@@ -11,6 +11,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "KeyObject.h"
 #include "Projectile.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -93,6 +94,7 @@ void APlayerCharacter::BeginPlay()
 			playerUI->UpdateScore();
 			playerUI->UpdateAmmo(currentAmmo, maxAmmo);
 			playerUI->UpdateHealth(health, maxHealth);
+			playerUI->NoKey();
 		}
 	}
 }
@@ -180,7 +182,14 @@ void APlayerCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActo
 	{
 		key->Pick();
 		hasKey = true;
+		playerUI->KeyPicked();
 	}
+}
+
+void APlayerCharacter::RemoveKey()
+{
+	hasKey = false;
+	playerUI->NoKey();
 }
 
 
@@ -229,8 +238,14 @@ void APlayerCharacter::Reload()
 
 void APlayerCharacter::Pause()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Hola"));
-	playerUI->PauseAction();
+	if (playerUI->GetPanelVisibility() == 1)
+	{
+		playerUI->HidePanel();
+	}
+	else if (playerUI->GetPanelVisibility() == 2)
+	{
+		playerUI->ShowPanel();
+	}
 }
 
 void APlayerCharacter::GetDamage()
@@ -247,6 +262,12 @@ void APlayerCharacter::GetDamage()
 	playerUI->UpdateHealth(health, maxHealth);
 }
 
+void APlayerCharacter::NoKeyMessage()
+{
+	playerUI->NoKeyNotification();
+}
+
+
 void APlayerCharacter::DeathNotification()
 {
 	canMove = false;
@@ -254,8 +275,7 @@ void APlayerCharacter::DeathNotification()
 
 void APlayerCharacter::WinNotification()
 {
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Victoria"));
-	}
+	UWorld* World = GetWorld();
+	
+	UGameplayStatics::OpenLevel(World, "WinScreen");
 }

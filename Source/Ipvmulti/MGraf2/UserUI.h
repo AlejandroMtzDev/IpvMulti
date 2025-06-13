@@ -28,6 +28,12 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* healthLabel;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* keyLabel;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* keyNotificationLabel;
 	
 	UPROPERTY(meta = (BindWidget))
 	UButton* scoreButton;
@@ -44,8 +50,22 @@ public:
 
 	void UpdateHealth(int health, int maxHealth);
 
+	void KeyPicked();
+
+	void NoKey();
+
+	void NoKeyNotification();
+
+	void HideKeyNotification();
+	
 	UFUNCTION()
-	void PauseAction();
+	int GetPanelVisibility();
+	
+	UFUNCTION()
+	void ShowPanel();
+
+	UFUNCTION()
+	void HidePanel();
 	
 	UFUNCTION()
 	void RaiseScore();
@@ -57,4 +77,6 @@ public:
 
 protected:
 	virtual void NativeConstruct() override;
+
+	FTimerHandle FiringTimer;
 };

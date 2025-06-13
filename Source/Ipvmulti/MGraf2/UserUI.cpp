@@ -78,9 +78,55 @@ void UUserUI::UpdateHealth(int health, int maxHealth)
 	}
 }
 
-void UUserUI::PauseAction()
+void UUserUI::ShowPanel()
 {
 	pauseCanvas->SetVisibility(ESlateVisibility::Visible);
+}
+
+void UUserUI::HidePanel()
+{
+	pauseCanvas->SetVisibility(ESlateVisibility::Hidden);
+}
+
+int UUserUI::GetPanelVisibility()
+{
+	if (pauseCanvas->GetVisibility() == ESlateVisibility::Visible)
+	{
+		return 1;
+	}
+
+	if (pauseCanvas->GetVisibility() == ESlateVisibility::Hidden)
+	{
+		return 2;
+	}
+
+	return 3;
+}
+
+void UUserUI::NoKeyNotification()
+{
+	UWorld* World = GetWorld();
+	float messageTime = 4.0f;
+
+	keyNotificationLabel->SetText(FText::FromString("No hay llave en el inventario"));
+	keyNotificationLabel->SetVisibility(ESlateVisibility::Visible);
+	
+	World->GetTimerManager().SetTimer(FiringTimer, this, &UUserUI::HideKeyNotification, messageTime, false);
+}
+
+void UUserUI::HideKeyNotification()
+{
+	keyNotificationLabel->SetVisibility(ESlateVisibility::Hidden);
+}
+
+void UUserUI::KeyPicked()
+{
+	keyLabel->SetText(FText::FromString("Llave en el inventario"));
+}
+
+void UUserUI::NoKey()
+{
+	keyLabel->SetText(FText::FromString("Sin llave en el inventario"));
 }
 
 void UUserUI::UpdateScore()
