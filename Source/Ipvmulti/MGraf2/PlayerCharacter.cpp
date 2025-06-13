@@ -60,16 +60,47 @@ APlayerCharacter::APlayerCharacter()
 	FireRate = 0.25f;
 	isFiringWeapon = false;
 
+	maxAmmo = 6;
+	currentAmmo = maxAmmo;
+
 	hasKey = false;
 
 	canMove = true;
-	health = 100.0f;
+
+	maxHealth = 100.0f;
+	health = maxHealth;
 }
 
 // Called when the game starts or when spawned
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (GetController() && GetController()->IsLocalController() && gameUI_Class)
+	{
+		playerUI = CreateWidget<UUserUI>(GetWorld(), gameUI_Class);
+		
+		if (playerUI)
+		{
+			AGameModeUserUI* gameMode = Cast<AGameModeUserUI>(GetWorld()->GetAuthGameMode());
+
+			if (gameMode)
+			{
+				playerUI->gameMode = gameMode;
+			}
+
+			playerUI->AddToViewport();
+			playerUI->UpdateScore();
+			playerUI->UpdateAmmo(currentAmmo, maxAmmo);
+			playerUI->UpdateHealth(health, maxHealth);
+		}
+	}
+}
+
+// Called every frame
+void APlayerCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
 }
 
 void APlayerCharacter::Move(const FInputActionValue& Value)
@@ -113,7 +144,7 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 
 void APlayerCharacter::StartFire()
 {
-	if (!isFiringWeapon)
+	if (!isFiringWeapon && currentAmmo > 0)
 	{
 		isFiringWeapon = true;
 		UWorld* World = GetWorld();
@@ -137,12 +168,10 @@ void APlayerCharacter::HandleFire()
 	spawnParameters.Owner = this;
 	 
 	AProjectile* spawnedProjectile = GetWorld()->SpawnActor<AProjectile>(spawnLocation, spawnRotation, spawnParameters);
-}
 
-// Called every frame
-void APlayerCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
+	currentAmmo -= 1;
+
+	playerUI->UpdateAmmo(currentAmmo, maxAmmo);
 }
 
 void APlayerCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -178,6 +207,12 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 		// Firing
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &APlayerCharacter::StartFire);
+
+		// Reloading
+		EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Reload);
+
+		// Pause
+		EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Pause);
 	}
 }
 
@@ -186,16 +221,30 @@ bool APlayerCharacter::CheckForKey()
 	return hasKey;
 }
 
+void APlayerCharacter::Reload()
+{
+	currentAmmo = maxAmmo;
+	playerUI->UpdateAmmo(currentAmmo, maxAmmo);
+}
+
+void APlayerCharacter::Pause()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Hola"));
+	playerUI->PauseAction();
+}
+
 void APlayerCharacter::GetDamage()
 {
 	if (health >= 0.0f)
 	{
-		health -= 50;
+		health -= 10;
 	}
 	else
 	{
 		DeathNotification();
 	}
+
+	playerUI->UpdateHealth(health, maxHealth);
 }
 
 void APlayerCharacter::DeathNotification()

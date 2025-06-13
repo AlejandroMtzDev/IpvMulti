@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "EnhancedInputSubsystemInterface.h"
+#include "UserUI.h"
 #include "GameFramework/Character.h"
 #include "PlayerCharacter.generated.h"
 
@@ -55,8 +56,17 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* FireAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* ReloadAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* PauseAction;
+
 	bool hasKey;
 	bool canMove;
+
+	int currentAmmo;
+	int maxAmmo;
 
 	void DeathNotification();
 	
@@ -73,6 +83,7 @@ public:
 	bool CheckForKey();
 
 	float health;
+	float maxHealth;
 	
 	void GetDamage();
 
@@ -99,6 +110,16 @@ protected:
 	
 	void HandleFire();
 
+	void Reload();
+
+	void Pause();
+
 	/** A timer handle used for providing the fire rate delay in-between spawns.*/
 	FTimerHandle FiringTimer;
+
+	UUserUI* playerUI;
+
+public:
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UUserUI> gameUI_Class;
 };
