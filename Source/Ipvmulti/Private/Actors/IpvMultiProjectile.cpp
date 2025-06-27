@@ -52,7 +52,7 @@ AIpvMultiProjectile::AIpvMultiProjectile()
 	ProjectileMovementComponent->ProjectileGravityScale = 0.0f;
 
 	DamageType = UDamageType::StaticClass();
-	Damage = 10.0f;
+	Damage = 25.0f;
 }
 
 // Called when the game starts or when spawned

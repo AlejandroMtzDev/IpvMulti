@@ -9,12 +9,12 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "Net/UnrealNetwork.h"
 #include "Engine/Engine.h"
 #include "Ipvmulti/Public/Actors/IpvMultiProjectile.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ANewIpvMultiCharacter::ANewIpvMultiCharacter()
@@ -120,7 +120,7 @@ void ANewIpvMultiCharacter::Move(const FInputActionValue& Value)
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
-	if (Controller != nullptr)
+	if (Controller != nullptr && CurrentHealth > 0)
 	{
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
@@ -143,7 +143,7 @@ void ANewIpvMultiCharacter::Look(const FInputActionValue& Value)
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
-	if (Controller != nullptr)
+	if (Controller != nullptr && CurrentHealth > 0)
 	{
 		// add yaw and pitch input to controller
 		AddControllerYawInput(LookAxisVector.X);
@@ -157,7 +157,7 @@ void ANewIpvMultiCharacter::Look(const FInputActionValue& Value)
 // Called every frame
 void ANewIpvMultiCharacter::StartFire()
 {
-	if (!bIsFiringWeapon)
+	if (!bIsFiringWeapon && CurrentHealth <= 0)
 	{
 		bIsFiringWeapon = true;
 		UWorld* World = GetWorld();
@@ -233,6 +233,7 @@ void ANewIpvMultiCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimePro
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ANewIpvMultiCharacter, CurrentHealth);
+	DOREPLIFETIME(ANewIpvMultiCharacter, CurrentAmmo);
 }
 
 void ANewIpvMultiCharacter::OnRep_CurrentHealth()
@@ -284,6 +285,20 @@ float ANewIpvMultiCharacter::TakeDamage(float DamageTaken, struct FDamageEvent c
 	float damageApplied = CurrentHealth - DamageTaken;
 	SetCurrentHealth(damageApplied);
 	return damageApplied;
+}
+
+void ANewIpvMultiCharacter::OpenLobby()
+{
+	UWorld* World = GetWorld();
+
+	if (!World) return;
+
+	World->ServerTravel("/Game/Lobby?listen");
+}
+
+void ANewIpvMultiCharacter::CallOpenLevel(const FString& IPAddress)
+{
+	UGameplayStatics::OpenLevel(this, *IPAddress);
 }
 
 

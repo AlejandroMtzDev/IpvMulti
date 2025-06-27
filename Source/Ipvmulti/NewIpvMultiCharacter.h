@@ -147,6 +147,13 @@ public:
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Ammo) ///
 	int CurrentAmmo;
 
+	// 192.168.1.66
+	UFUNCTION(BlueprintCallable)
+	void OpenLobby();
+
+	UFUNCTION(BlueprintCallable)
+	void CallOpenLevel(const FString& IPAddress);
+
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Gameplay|Projectile")
 	TSubclassOf<class AIpvMultiProjectile> ProjectileClass;
