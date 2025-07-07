@@ -154,6 +154,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void CallOpenLevel(const FString& IPAddress);
 
+	UPROPERTY(BlueprintReadOnly, Category = "Gameplay")
+	bool bIsCarryingObjective;
+
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Gameplay|Projectile")
 	TSubclassOf<class AIpvMultiProjectile> ProjectileClass;

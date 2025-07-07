@@ -157,7 +157,7 @@ void ANewIpvMultiCharacter::Look(const FInputActionValue& Value)
 // Called every frame
 void ANewIpvMultiCharacter::StartFire()
 {
-	if (!bIsFiringWeapon && CurrentHealth <= 0)
+	if (!bIsFiringWeapon && CurrentHealth >= 0)
 	{
 		bIsFiringWeapon = true;
 		UWorld* World = GetWorld();
