@@ -11,6 +11,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "Blueprint/UserWidget.h"
 #include "Net/UnrealNetwork.h"
 #include "Engine/Engine.h"
 #include "Ipvmulti/Public/Actors/IpvMultiProjectile.h"
@@ -76,6 +77,86 @@ void ANewIpvMultiCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+}
+
+void ANewIpvMultiCharacter::StartRagdoll()
+{
+	// On server, call the server RPC
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		bIsRagdoll = true;
+		OnRep_IsRagdoll(); // Call locally on server
+	}
+	else // On client, ask server to activate ragdoll
+	{
+		ServerStartRagdoll();
+	}
+}
+
+void ANewIpvMultiCharacter::DisableCharacterCollision()
+{
+	bReplicates = true;
+	// Disable capsule collision
+	UCapsuleComponent* CapsuleComp = GetCapsuleComponent();
+	if (CapsuleComp)
+	{
+		CapsuleComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		CapsuleComp->SetCollisionResponseToAllChannels(ECR_Ignore);
+	}
+
+	// Disable mesh collision (except for physics)
+	USkeletalMeshComponent* MeshComp = GetMesh();
+	if (MeshComp)
+	{
+		MeshComp->SetCollisionResponseToAllChannels(ECR_Ignore);
+		MeshComp->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+		MeshComp->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Block);
+		MeshComp->SetCollisionResponseToChannel(ECC_PhysicsBody, ECR_Block);
+	}
+
+	// Disable character movement
+	UCharacterMovementComponent* MovementComp = GetCharacterMovement();
+	if (MovementComp)
+	{
+		MovementComp->StopMovementImmediately();
+		MovementComp->DisableMovement();
+	}
+}
+
+void ANewIpvMultiCharacter::ShowGameOverScreen()
+{
+	if (GameOverWidgetClass && IsLocallyControlled())
+	{
+		// Create and show the game over widget
+		GameOverWidget = CreateWidget<UUserWidget>(GetWorld(), GameOverWidgetClass);
+		if (GameOverWidget)
+		{
+			GameOverWidget->AddToViewport();
+		}
+	}
+}
+
+void ANewIpvMultiCharacter::OnRep_IsRagdoll()
+{
+	if (bIsRagdoll)
+	{
+		// Enable physics simulation on the mesh
+		USkeletalMeshComponent* MeshComp = GetMesh();
+		if (MeshComp)
+		{
+			MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+			MeshComp->SetSimulatePhysics(true);
+			MeshComp->SetAllBodiesSimulatePhysics(true);
+			MeshComp->WakeAllRigidBodies();
+		}
+        
+		DisableCharacterCollision();
+	}
+}
+
+void ANewIpvMultiCharacter::ServerStartRagdoll_Implementation()
+{
+	bIsRagdoll = true;
 }
 
 void ANewIpvMultiCharacter::Tick(float DeltaTime)
@@ -254,14 +335,10 @@ void ANewIpvMultiCharacter::OnHealthUpdate_Implementation()
     	{
     		FString deathMessage = FString::Printf(TEXT("You have been killed."));
     		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, deathMessage);
+
+    		StartRagdoll();
+    		ShowGameOverScreen();
     	}
-    }
-     
-    //Server-specific functionality
-    if (GetLocalRole() == ROLE_Authority)
-    {
-    	FString healthMessage = FString::Printf(TEXT("%s now has %f health remaining."), *GetFName().ToString(), CurrentHealth);
-    	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, healthMessage);
     }
 	
 	//Functions that occur on all machines.

@@ -134,6 +134,31 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UFUNCTION(BlueprintCallable)
+	void StartRagdoll();
+	
+	void DisableCharacterCollision();
+	
+	void ShowGameOverScreen();
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+    TSubclassOf<class UUserWidget> GameOverWidgetClass;
+    
+    UPROPERTY()
+    class UUserWidget* GameOverWidget;
+	
+	UPROPERTY(ReplicatedUsing = OnRep_IsRagdoll)
+    bool bIsRagdoll;
+    
+    UFUNCTION()
+    void OnRep_IsRagdoll();
+    
+    UFUNCTION(Server, Reliable)
+    void ServerStartRagdoll();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void StartTimer();
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

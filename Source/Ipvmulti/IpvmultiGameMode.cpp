@@ -14,42 +14,43 @@ AIpvmultiGameMode::AIpvmultiGameMode()
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
+
+	GameStateClass = AIpvMultiGameState::StaticClass();
 }
 
 void AIpvmultiGameMode::CompleteMission(APawn* Pawn)
 {
 	if (Pawn == nullptr) return;
-	{
-		Pawn->DisableInput(nullptr);
-		OnMissionCompleted(Pawn);
+	
+	Pawn->DisableInput(nullptr);
+	
+	if (SpectatorViewClass)
+	{	
+		TArray<AActor*> ReturnActors;
+		UGameplayStatics::GetAllActorsOfClass(this, SpectatorViewClass, ReturnActors);
 
-		if (SpectatorViewClass)
+		if (ReturnActors.Num() > 0)
 		{
-			TArray<AActor*> ReturnActors;
-			UGameplayStatics::GetAllActorsOfClass(this, SpectatorViewClass, ReturnActors);
-
-			if (ReturnActors.Num() > 0)
+			AActor* NewViewTarget = ReturnActors[0];
+			
+			for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; It++)
 			{
-				AActor* NewViewTarget = ReturnActors[0];
-
-				for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; It++)
+				APlayerController* PC = It->Get();
+				if (PC)
 				{
-					APlayerController* PC = It->Get();
-					if (PC)
-					{
-						PC->SetViewTargetWithBlend(NewViewTarget, 1.0f, VTBlend_Cubic);
-					}	
-				}
+					PC->SetViewTargetWithBlend(NewViewTarget, 1.0f, VTBlend_Cubic);
+				}	
 			}
 		}
-
-		AIpvMultiGameState* GS = GetGameState<AIpvMultiGameState>();
-
-		if (GS)
-		{
-			GS->MulticastOnMissionComplete_Implementation(Pawn, true);
-		}
-		
-		OnMissionCompleted(Pawn);
 	}
+
+	AIpvMultiGameState* GS = GetGameState<AIpvMultiGameState>();
+
+	if (GS)
+	{
+		GS->MulticastOnMissionComplete(Pawn, true);
+	}
+	
+	OnMissionCompleted(Pawn);
+	
 }
